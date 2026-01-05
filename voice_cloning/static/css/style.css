@@ -1,0 +1,31 @@
+body {
+  background: #121212;
+  color: #eaeaea;
+}
+
+.card {
+  border-radius: 20px;
+  background: #1e1e1e;
+}
+
+h1 {
+  text-shadow: 0 0 12px rgba(0,191,255,0.4);
+}
+
+canvas {
+  background: #222;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+#recordBtn, #stopBtn {
+  min-width: 140px;
+  font-weight: 600;
+}
+
+#recordedAudio {
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #1a1a1a;
+  padding: 5px;
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VOCALMIMIC: DEEP LEARNING VOICE CLONING</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-dark text-light">
+  <div class="container py-5">
+    <h1 class="text-center mb-3 display-5 fw-bold" style="letter-spacing:1px;">
+      🔊 VOCALMIMIC: <span style="color:#00BFFF;">DEEP LEARNING VOICE CLONING</span>
+    </h1>
+    <p class="text-center text-muted mb-4">
+      Advanced neural TTS & encoder-based synthesis pipeline — powered by XTTS v2 and Resemblyzer.
+    </p>
+
+    <div class="card bg-secondary p-4 shadow-lg">
+      <form id="cloneForm" enctype="multipart/form-data">
+        <label class="form-label">🎤 Upload or Record:</label>
+        <input type="file" name="audio" id="audioFile" accept="audio/*" class="form-control mb-3">
+
+        <div class="d-flex justify-content-center gap-2 my-3">
+          <button type="button" id="recordBtn" class="btn btn-danger">🎙️ Start Recording</button>
+          <button type="button" id="stopBtn" class="btn btn-secondary" disabled>⏹ Stop</button>
+        </div>
+        <audio id="recordedAudio" controls class="w-100 mb-3" style="display:none;"></audio>
+
+        <textarea name="text" class="form-control mb-3" placeholder="Enter text to clone..." rows="3" required></textarea>
+        <label>🤖 AI Strength:</label>
+        <input type="range" name="ai_strength" class="form-range mb-3" min="0" max="100" value="100">
+        <button type="submit" class="btn btn-primary w-100">Clone Voice </button>
+      </form>
+
+      <div id="loading" class="text-center mt-3" style="display:none;">
+        <div class="spinner-border text-light"></div>
+        <p>Processing pipeline...</p>
+      </div>
+
+      <div id="results" class="mt-5" style="display:none;">
+        <audio id="clonedAudio" controls class="w-100 mb-3"></audio>
+        <h5>📈 Similarity Score: <span id="simScore"></span></h5>
+        <h5> AI Contribution: <span id="aiPercent"></span>%</h5>
+
+        <div class="row mt-4">
+          <div class="col-md-6"><canvas id="inputChart"></canvas></div>
+          <div class="col-md-6"><canvas id="encoderChart"></canvas></div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-md-6"><canvas id="vocoderChart"></canvas></div>
+          <div class="col-md-6"><canvas id="synthChart"></canvas></div>
+        </div>
+        <div class="mt-5">
+          <h4 class="text-center">Input vs Output Comparison</h4>
+          <canvas id="compareChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/record.js') }}"></script>
+  <script>
+    const form = document.getElementById('cloneForm');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loading.style.display = 'block';
+      results.style.display = 'none';
+
+      const formData = new FormData(form);
+      const res = await fetch('/process', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      loading.style.display = 'none';
+      results.style.display = 'block';
+
+      document.getElementById('clonedAudio').src = data.cloned_audio;
+      document.getElementById('simScore').innerText = data.similarity;
+      document.getElementById('aiPercent').innerText = data.ai_contribution * 100;
+
+      const makeChart = (id, label, wave, color) => {
+        new Chart(document.getElementById(id), {
+          type: 'line',
+          data: { labels: wave.x, datasets: [{ label, data: wave.y, borderColor: color, borderWidth: 1.5, fill: false }] },
+          options: { scales: { x: { display: false }, y: { display: false } } }
+        });
+      };
+
+      makeChart('inputChart', 'Input', data.input_waveform, '#00BFFF');
+      makeChart('encoderChart', 'Encoder', data.encoder_waveform, '#1E90FF');
+      makeChart('vocoderChart', 'Vocoder', data.vocoder_waveform, '#FF7F50');
+      makeChart('synthChart', 'Synthesizer', data.synth_waveform, '#32CD32');
+
+      new Chart(document.getElementById('compareChart'), {
+        type: 'line',
+        data: {
+          labels: data.input_waveform.x,
+          datasets: [
+            { label: 'Input', data: data.input_waveform.y, borderColor: '#00BFFF', fill: false },
+            { label: 'Output', data: data.output_waveform.y, borderColor: '#FFD700', fill: false }
+          ]
+        },
+        options: { responsive: true }
+      });
+    });
+  </script>
+</body>
+</html>

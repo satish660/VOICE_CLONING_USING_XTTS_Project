@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results — VocalMimic Flask</title>
+</head>
+<body style="font-family: sans-serif; text-align: center;">
+    <h1>🧬 Cloning Complete!</h1>
+
+    <h2>🔊 Cloned Audio</h2>
+    <audio controls>
+        <source src="{{ cloned_audio }}" type="audio/wav">
+    </audio>
+
+    <h2>📈 Similarity Score: {{ similarity }}</h2>
+
+    <div style="display: flex; justify-content: center; gap: 30px;">
+        <div>
+            <h3>Input Waveform</h3>
+            <img src="{{ input_wave }}" width="400">
+        </div>
+        <div>
+            <h3>Output Waveform</h3>
+            <img src="{{ output_wave }}" width="400">
+        </div>
+    </div>
+
+    <br>
+    <a href="/">⬅ Back</a>
+</body>
+</html>
